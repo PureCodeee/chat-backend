@@ -3,6 +3,7 @@ from app.api.routes import auth, users
 from app.api.routes import chats
 from app.api.routes import ws
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import RedirectResponse
 
 app = FastAPI(title="TempleChat")
 
@@ -13,6 +14,10 @@ app.include_router(users.router)
 app.include_router(chats.router)
 app.include_router(ws.router)
 
+
+@app.get("/")
+def root():
+    return RedirectResponse("/static/login.html")
 
 
 @app.get("/health")
