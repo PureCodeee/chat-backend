@@ -238,11 +238,20 @@ button:hover {
 
 
 @media (max-width: 768px) {
+  .app-container {
+    height: 100dvh;
+  }
+
+  .chat-area {
+    height: 100dvh;
+  }
+
   .sidebar {
     position: fixed;
-    left: -260px;
+    left: -100%;
     top: 0;
-    height: 100%;
+    width: 260px;
+    height: 100dvh;
     background: white;
     z-index: 100;
     transition: left 0.2s ease;
@@ -258,6 +267,15 @@ button:hover {
 
   .close-btn {
     display: inline-block;
+  }
+
+    #messages {
+    padding: 8px;
+    font-size: 15px;
+  }
+
+  .chat-input {
+    padding-bottom: env(safe-area-inset-bottom);
   }
   
 }
