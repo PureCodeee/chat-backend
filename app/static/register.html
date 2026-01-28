@@ -4,26 +4,36 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Register</title>
+  <link rel="stylesheet" href="/static/styles.css">
 </head>
 <body>
-  <h2>Register</h2>
+  <div class="auth-container">
+    <div class="auth-card">
+      <h2>Create Paranoid-chat account</h2>
 
-  <input id="username" placeholder="Username"><br><br>
-  <input id="password" type="password" placeholder="Password"><br><br>
+      <input id="username" placeholder="Username" autocomplete="username">
+      <input id="password" type="password" placeholder="Password" autocomplete="new-password">
 
-  <button onclick="register()">Register</button>
+      <button onclick="register()">Register</button>
 
-  <div id="error" style="color:red"></div>
+      <div id="error" class="auth-error"></div>
 
-    <p>
+      <p class="auth-footer">
         Already have account?
         <a href="/static/login.html">Login</a>
-    </p>
+      </p>
+    </div>
+  </div>
 
   <script>
     async function register() {
-      const username = document.getElementById("username").value;
-      const password = document.getElementById("password").value;
+      const username = document.getElementById("username").value.trim();
+      const password = document.getElementById("password").value.trim();
+
+      if (!username || !password) {
+        showError("Enter username and password");
+        return;
+      }
 
       const res = await fetch("/auth/register", {
         method: "POST",
@@ -32,11 +42,10 @@
       });
 
       if (!res.ok) {
-        document.getElementById("error").innerText = "Registration failed";
+        showError("Registration failed");
         return;
       }
 
-      // auto login after register
       await login();
     }
 
@@ -51,13 +60,17 @@
       });
 
       if (!res.ok) {
-        document.getElementById("error").innerText = "Login after register failed";
+        showError("Login after register failed");
         return;
       }
 
       const data = await res.json();
       localStorage.setItem("token", data.access_token);
       window.location.href = "/static/chat.html";
+    }
+
+    function showError(msg) {
+      document.getElementById("error").innerText = msg;
     }
   </script>
 </body>

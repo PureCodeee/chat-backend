@@ -3,23 +3,27 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/styles.css">
   <title>Login</title>
 </head>
 <body>
-  <h2>Login</h2>
+    <div class="auth-container">
+        <div class="auth-card">
+            <h2>Login to your Paranoid-chat</h2>
 
-  <input id="username" placeholder="Username"><br><br>
-  <input id="password" type="password" placeholder="Password"><br><br>
+            <input id="username" placeholder="Username" autocomplete="username">
+            <input id="password" type="password" placeholder="Password" autocomplete="new-password">
 
-  <button onclick="login()">Login</button>
+            <button onclick="login()">Login</button>
 
-  <div id="error" style="color:red"></div>
+            <div id="error" style="color:red"></div>
 
-    <p>
-    No account?
-    <a href="/static/register.html">Register</a>
-    </p>
-
+                <p class="auth-footer">
+                No account?
+                <a href="/static/register.html">Register</a>
+                </p>
+        </div>
+    </div>
   <script>
     async function login() {
       const username = document.getElementById("username").value;
