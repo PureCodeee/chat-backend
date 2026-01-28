@@ -3,126 +3,65 @@
 <head>
   <meta charset="utf-8">
   <title>Realtime Chat</title>
+  <link rel="stylesheet" href="/static/styles.css">
 
-  <style>
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      max-width: 800px;
-      margin: 40px auto;
-      padding: 0 20px;
-      background: #f5f6fa;
-    }
-
-    h2 {
-      margin-bottom: 10px;
-    }
-
-    .top-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-      margin-bottom: 20px;
-    }
-
-    input {
-      padding: 8px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 14px;
-    }
-
-    button {
-      padding: 8px 12px;
-      border-radius: 6px;
-      border: none;
-      background: #4f46e5;
-      color: white;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #4338ca;
-    }
-
-    #messages {
-      height: 350px;
-      overflow-y: auto;
-      background: #fafafa;
-      border: 1px solid #e5e7eb;
-      border-radius: 6px;
-      padding: 10px;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    .message {
-      margin-bottom: 6px;
-    }
-
-    .message b {
-      color: #111827;
-    }
-
-    .send-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    .send-row input {
-      flex: 1;
-    }
-
-    .logout-btn {
-      background: #ef4444;
-    }
-
-    .logout-btn:hover {
-      background: #dc2626;
-    }
-  </style>
 </head>
 <body>
+    <div class="app-container">
 
-  <div class="top-bar">
-    <h2>Realtime Chat</h2>
-    <button class="logout-btn" onclick="logout()">Logout</button>
-  </div>
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h3>Chats</h3>
+          <button class="close-btn" onclick="toggleSidebar()">✕</button>
+        </div>
 
-  <div class="card">
-    <h3>Start chat</h3>
-    <input id="otherUsername" placeholder="Enter username">
-    <button onclick="startChat()">Start Chat</button>
-  </div>
+        <div class="start-chat">
+          <input id="otherUsername" placeholder="Username">
+          <button onclick="startChat()">Start</button>
+        </div>
 
-  <div class="card">
-    <div id="messages"></div>
+        <div id="chatList"></div>
+      </div>
 
-    <div class="send-row">
-      <input id="msg" placeholder="Type message...">
-      <button onclick="send()">Send</button>
+      <div class="chat-area">
+        <div class="chat-header">
+          <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+          <span id="currentChatLabel">Select chat</span>
+          <span id="currentUser" style="margin-left:auto;"></span>
+          <button onclick="logout()">Logout</button>
+        </div>
+
+        <div id="messages"></div>
+
+        <div class="chat-input">
+          <input id="msg" placeholder="Type message...">
+          <button onclick="send()">Send</button>
+        </div>
+      </div>
+
     </div>
-  </div>
 
   <script>
     let ws = null;
+    let activeChatId = null;
 
     // Проверка авторизации при загрузке
     window.onload = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         window.location.href = "/static/login.html";
+        return;
       }
+      loadCurrentUser();
+      loadChats();
     };
 
+
     function connectToChat(chatId) {
+        document.getElementById("sidebar").classList.remove("open");
+        document.getElementById("currentChatLabel").innerText = `Chat #${chatId}`;
+        activeChatId = chatId;
+        highlightActiveChat();
       const token = localStorage.getItem("token");
 
       if (ws) {
@@ -175,6 +114,7 @@
 
       const data = await res.json();
       connectToChat(data.id);
+      loadChats();
     }
 
     function send() {
@@ -197,7 +137,128 @@
       }
       window.location.href = "/static/login.html";
     }
-  </script>
 
+    async function loadCurrentUser() {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("/users/me", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (res.ok) {
+        const user = await res.json();
+        document.getElementById("currentUser").innerText = `@${user.username} (you)`;
+      }
+    }
+
+
+    async function loadChats() {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("/chats/my", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) return;
+
+      const chats = await res.json();
+      const list = document.getElementById("chatList");
+      list.innerHTML = "";
+
+      for (const chat of chats) {
+        const div = document.createElement("div");
+        div.className = "chat-item";
+        div.dataset.chatId = chat.id;
+        div.innerHTML = `
+          <span>${chat.other_username || "Unknown"}</span>
+          <span class="chat-actions" onclick="openChatMenu(event, ${chat.id})">⋯</span>
+        `;
+        div.onclick = () => connectToChat(chat.id);
+        list.appendChild(div);
+        highlightActiveChat();
+      }
+    }
+
+
+    function highlightActiveChat() {
+      const items = document.querySelectorAll(".chat-item");
+      items.forEach(item => {
+        if (parseInt(item.dataset.chatId) === activeChatId) {
+          item.classList.add("active-chat");
+        } else {
+          item.classList.remove("active-chat");
+        }
+      });
+    }
+
+    function openChatMenu(event, chatId) {
+      event.stopPropagation(); // чтобы не открывался чат
+
+      closeChatMenu();
+
+      const menu = document.createElement("div");
+      menu.className = "chat-menu";
+      menu.innerHTML = `
+        <div class="chat-menu-item" onclick="leaveChat(${chatId})">
+          Leave chat
+        </div>
+      `;
+
+      document.body.appendChild(menu);
+
+      const rect = event.target.getBoundingClientRect();
+      menu.style.top = rect.bottom + "px";
+      menu.style.left = rect.left + "px";
+
+      document.addEventListener("click", closeChatMenu);
+    }
+
+
+    function closeChatMenu() {
+      const menu = document.querySelector(".chat-menu");
+      if (menu) menu.remove();
+      document.removeEventListener("click", closeChatMenu);
+    }
+
+
+    async function leaveChat(chatId) {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(`/chats/${chatId}/leave`, {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      if (!res.ok) {
+        alert("Failed to leave chat");
+        return;
+      }
+
+      // если мы были в этом чате — закрываем WS
+      if (activeChatId === chatId) {
+        activeChatId = null;
+        if (ws) {
+          ws.close();
+          ws = null;
+        }
+        document.getElementById("messages").innerHTML = "";
+      }
+
+      loadChats();
+    }
+
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      sidebar.classList.toggle("open");
+    }
+
+  </script>
 </body>
 </html>

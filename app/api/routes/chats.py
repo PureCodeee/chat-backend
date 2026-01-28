@@ -1,16 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 
 
-from app.models.chat_participant import ChatParticipant
 from app.api.deps import get_current_user
 from app.db.session import get_db
-from app.models.user import User
 from app.schemas.chat import ChatOut
 from app.schemas.message import MessageCreate, MessageOut
 from app.services.chat_service import create_chat, get_user_chats
 from app.services.message_service import create_message, get_chat_messages
+from app.models.chat import Chat
+from app.models.chat_participant import ChatParticipant
+from app.models.user import User
+
+
 
 
 router = APIRouter(prefix="/chats", tags=["chats"])
@@ -103,3 +106,51 @@ async def get_or_create_chat_by_username(
     # иначе создать новый
     chat = await create_chat(db, current_user.id, other_user.id)
     return {"id": chat.id, "existing": False}
+
+
+@router.get("/my")
+async def get_my_chats(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(
+        select(Chat.id)
+        .join(ChatParticipant)
+        .where(ChatParticipant.user_id == current_user.id)
+    )
+    chat_ids = [row[0] for row in result.all()]
+
+    chats = []
+    for chat_id in chat_ids:
+        # получить другого участника
+        result = await db.execute(
+            select(User.username)
+            .join(ChatParticipant, ChatParticipant.user_id == User.id)
+            .where(
+                ChatParticipant.chat_id == chat_id,
+                User.id != current_user.id
+            )
+        )
+        other_username = result.scalar_one_or_none()
+        chats.append({
+            "id": chat_id,
+            "other_username": other_username
+        })
+
+    return chats
+
+
+@router.post("/{chat_id}/leave")
+async def leave_chat(
+    chat_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    await db.execute(
+        delete(ChatParticipant).where(
+            ChatParticipant.chat_id == chat_id,
+            ChatParticipant.user_id == current_user.id,
+        )
+    )
+    await db.commit()
+    return {"status": "left"}
