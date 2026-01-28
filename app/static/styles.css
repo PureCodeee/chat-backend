@@ -231,13 +231,14 @@ button:hover {
   border-top: 1px solid #ddd;
 }
 
-
-
 /* Mobile */
 
-
-
 @media (max-width: 768px) {
+
+  body {
+    overscroll-behavior: none;
+    touch-action: manipulation;
+  }
   .app-container {
     height: 100dvh;
   }
@@ -275,7 +276,10 @@ button:hover {
   }
 
   .chat-input {
-    padding-bottom: env(safe-area-inset-bottom);
+    position: sticky;
+    bottom: 0;
+    background: white;
   }
+
   
 }

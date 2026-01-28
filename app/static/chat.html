@@ -260,6 +260,28 @@
       sidebar.classList.toggle("open");
     }
 
+
+    function adjustForKeyboard() {
+      if (!window.visualViewport) return;
+
+      const viewport = window.visualViewport;
+      const chatInput = document.querySelector(".chat-input");
+
+      function update() {
+        const keyboardHeight = window.innerHeight - viewport.height - viewport.offsetTop;
+
+        if (keyboardHeight > 0) {
+          chatInput.style.transform = `translateY(-${keyboardHeight}px)`;
+        } else {
+          chatInput.style.transform = "";
+        }
+      }
+
+      viewport.addEventListener("resize", update);
+      viewport.addEventListener("scroll", update);
+    }
+
+    adjustForKeyboard();
   </script>
 </body>
 </html>
