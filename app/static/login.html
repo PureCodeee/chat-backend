@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Login</title>
+</head>
+<body>
+  <h2>Login</h2>
+
+  <input id="username" placeholder="Username"><br><br>
+  <input id="password" type="password" placeholder="Password"><br><br>
+
+  <button onclick="login()">Login</button>
+
+  <div id="error" style="color:red"></div>
+
+  <script>
+    async function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      const res = await fetch("/auth/login", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({username, password})
+      });
+
+      if (!res.ok) {
+        document.getElementById("error").innerText = "Invalid credentials";
+        return;
+      }
+
+      const data = await res.json();
+      localStorage.setItem("token", data.access_token);
+
+      // redirect to chat
+      window.location.href = "/static/chat.html";
+    }
+  </script>
+</body>
+</html>
