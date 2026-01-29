@@ -41,6 +41,14 @@ async def websocket_chat(websocket: WebSocket, chat_id: int):
 
         await manager.connect(chat_id, websocket)
 
+        await manager.broadcast(
+            chat_id,
+            {
+                "type": "system",
+                "message": f"{user.username} joined the chat"
+            }
+        )
+
         try:
             while True:
                 data = await websocket.receive_json()
@@ -76,3 +84,10 @@ async def websocket_chat(websocket: WebSocket, chat_id: int):
 
         except WebSocketDisconnect:
             manager.disconnect(chat_id, websocket)
+            await manager.broadcast(
+                chat_id,
+                {
+                    "type": "system",
+                    "message": f"{user.username} left the chat"
+                }
+            )

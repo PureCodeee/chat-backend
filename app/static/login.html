@@ -46,6 +46,16 @@
       // redirect to chat
       window.location.href = "/static/chat.html";
     }
+
+    function showError(msg) {
+          document.getElementById("error").innerText = msg;
+        }
+
+        document.getElementById("password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        login();
+      }
+    });
   </script>
 </body>
 </html>

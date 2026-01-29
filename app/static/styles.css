@@ -344,3 +344,11 @@ button:hover {
 .auth-footer a:hover {
   text-decoration: underline;
 }
+
+
+.system-message {
+  text-align: center;
+  color: #6b7280;
+  font-size: 12px;
+  margin: 6px 0;
+}

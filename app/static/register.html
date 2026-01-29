@@ -70,8 +70,14 @@
     }
 
     function showError(msg) {
-      document.getElementById("error").innerText = msg;
-    }
+          document.getElementById("error").innerText = msg;
+        }
+
+        document.getElementById("password").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        register();
+      }
+    });
   </script>
 </body>
 </html>

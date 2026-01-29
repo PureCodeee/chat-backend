@@ -59,6 +59,10 @@
 
 
     function connectToChat(chatId) {
+        if (activeChatId === chatId && ws) {
+          console.log("Already connected to chat", chatId);
+          return;
+        }
         document.getElementById("sidebar").classList.remove("open");
         document.getElementById("currentChatLabel").innerText = `Chat #${chatId}`;
         activeChatId = chatId;
@@ -75,11 +79,21 @@
       ws.onmessage = (e) => {
         const data = JSON.parse(e.data);
         const div = document.getElementById("messages");
-        div.innerHTML += `
-          <div class="message">
-            <b>${data.sender}:</b> ${data.content}
-          </div>
-        `;
+
+        if (data.type === "system") {
+          div.innerHTML += `
+            <div class="system-message">
+              ${data.message}
+            </div>
+          `;
+        } else {
+          div.innerHTML += `
+            <div class="message">
+              <b>${data.sender}:</b> ${data.content}
+            </div>
+          `;
+        }
+
         div.scrollTop = div.scrollHeight;
       };
 
@@ -280,6 +294,13 @@
       viewport.addEventListener("resize", update);
       viewport.addEventListener("scroll", update);
     }
+
+    document.getElementById("msg").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        send();
+      }
+    });
 
     adjustForKeyboard();
   </script>
