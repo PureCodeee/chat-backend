@@ -104,8 +104,11 @@ async def get_or_create_chat_by_username(
             return {"id": row[0], "existing": True}
 
     # иначе создать новый
-    chat = await create_chat(db, current_user.id, other_user.id)
-    return {"id": chat.id, "existing": False}
+    try:
+        chat = await create_chat(db, current_user.id, other_user.id)
+        return {"id": chat.id, "existing": False}
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.get("/my")

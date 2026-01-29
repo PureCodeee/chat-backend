@@ -7,7 +7,6 @@ from fastapi.responses import RedirectResponse
 from app.db.session import engine
 from app.db.base import Base
 
-
 app = FastAPI(title="TempleChat")
 
 app.mount("/static", StaticFiles(directory="app/static"), name="static")
