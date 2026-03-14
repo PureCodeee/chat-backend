@@ -1,3 +1,3 @@
-#chat on FastAPI
+# Chat on FastAPI
 
 ![screen](./screen.png)
