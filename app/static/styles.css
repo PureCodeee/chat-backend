@@ -167,7 +167,7 @@ button {
   padding: 8px 12px;
   border-radius: var(--radius);
   border: none;
-  background: var(--bg-primary);
+  background: var(--bg-accent);
   color: var(--white);
   font-size: 14px;
   cursor: pointer;
@@ -273,11 +273,11 @@ button:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f6fa;
+  background: var(--bg-main);
 }
 
 .auth-card {
-  background: var(--white);
+  background: var(--bg-primary);
   padding: 30px;
   border-radius: 10px;
   width: 100%;
@@ -290,6 +290,7 @@ button:hover {
 
 .auth-card h2 {
   text-align: center;
+  color: var(--white);
 }
 
 .auth-card input {
@@ -306,6 +307,7 @@ button:hover {
 .auth-footer {
   text-align: center;
   font-size: 14px;
+  color: var(--white);
 }
 
 .auth-footer a {
